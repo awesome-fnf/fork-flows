@@ -1,0 +1,35 @@
+# {
+#   "executionName": "run1",
+#   "subflowName": "subflow",
+#   "keys": ["a", "b", "c"]
+# }
+version: v1beta1
+type: flow
+steps:
+  - type: foreach
+    name: fork
+    iterationMapping:
+      collection: $.keys
+      item: key
+    outputMappings:
+      - target: values
+        source: $local[*].value
+    steps:
+      - type: task
+        name: startSubflow
+        resourceArn: acs:fc:::services/subflowSamples/functions/startSubflow
+        pattern: waitForCallback
+        inputMappings:
+          - target: flowName
+            source: $input.subflowName
+          - target: executionName
+            source: $input.executionName
+          - target: key
+            source: $input.key
+          - target: taskToken
+            source: $context.task.token
+  - type: pass
+    name: join
+    inputMappings:
+      - target: my_values
+        source: $local.values

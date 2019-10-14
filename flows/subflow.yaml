@@ -1,0 +1,32 @@
+version: v1beta1
+type: flow
+steps:
+  - type: task
+    name: doWork
+    resourceArn: acs:fc:::services/subflowSamples/functions/doWork
+    inputMappings:
+      - target: key
+        source: $input.key
+    catch:
+      - errors:
+          - FnF.ALL
+        goto: reportTaskFailed
+  - type: task
+    name: reportTaskSucceeded
+    resourceArn: acs:fc:::services/subflowSamples/functions/reportTaskSucceeded
+    inputMappings:
+      - target: output
+        source: $local
+      - target: taskToken
+        source: $input.taskToken
+    end: true
+  - type: task
+    name: reportTaskFailed
+    resourceArn: acs:fc:::services/subflowSamples/functions/reportTaskFailed
+    inputMappings:
+      - target: error
+        source: SubflowError
+      - target: cause
+        source: Failed to execute subflow
+      - target: taskToken
+        source: $input.taskToken
